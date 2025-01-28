@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -6,6 +7,7 @@ import json
 
 app = Flask(__name__)
 
+# Function to extract YouTube transcript
 def extract_youtube_transcript(video_id):
     """
     Extracts the transcript of a YouTube video using its video ID.
@@ -72,9 +74,12 @@ def extract_youtube_transcript(video_id):
                 "duration": float(text_tag.get("dur", 0))
             })
 
-        return transcript_texts
+        # Convert to DataFrame (if needed for further processing)
+        df = pd.DataFrame(transcript_texts)
+        return df.to_dict(orient="records")
     except Exception as e:
         return {"error": f"Error extracting YouTube transcript: {str(e)}"}, 500
+
 
 @app.route('/transcript', methods=['GET'])
 def get_transcript():
@@ -99,5 +104,8 @@ def get_transcript():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    # Handle dynamic port assignment for Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
