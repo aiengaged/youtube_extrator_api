@@ -73,19 +73,28 @@ def extract_youtube_transcript(video_id):
         return {"error": f"Error extracting YouTube transcript: {str(e)}"}, 500
 
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
 @app.route('/transcript', methods=['GET'])
 def get_transcript():
+    logging.info("Request received at /transcript")
     video_id = request.args.get('video_id')
     if not video_id:
         return jsonify({"error": "video_id is required"}), 400
 
     try:
+        logging.info(f"Fetching transcript for video ID: {video_id}")
         transcript = extract_youtube_transcript(video_id)
-        if isinstance(transcript, tuple):  # Handle error from function
+        if isinstance(transcript, tuple):  # Handle errors returned as a tuple
+            logging.info(f"Error occurred: {transcript[0]}")
             return jsonify(transcript[0]), transcript[1]
         return jsonify(transcript), 200
     except Exception as e:
+        logging.error(f"Exception occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == '__main__':
