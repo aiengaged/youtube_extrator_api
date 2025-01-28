@@ -1,25 +1,20 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
+FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    pkg-config \
-    coinor-libipopt-dev && \
-    rm -rf /var/lib/apt/lists/*
+# Install Python
+RUN apt-get update && apt-get install -y python3 python3-pip
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
+# Copy files
 COPY . /app
 
-# Install Python dependencies
+# Upgrade pip and install dependencies
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Expose the port the app runs on
+# Expose port
 EXPOSE 5000
 
-# Run the application
-CMD ["python", "youtube_extractor_api.py"]
+# Command to run your API
+CMD ["python3", "youtube_extractor_api.py"]
