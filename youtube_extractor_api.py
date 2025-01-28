@@ -4,7 +4,10 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
-import os  # <-- Import added here
+import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -43,11 +46,28 @@ def extract_youtube_transcript(video_id):
 
         # Extract captions from the JSON data
         captions = json_data.get("captions", {}).get("playerCaptionsTracklistRenderer", {}).get("captionTracks", [])
-        if not captions:
-            return {"error": "No captions found"}, 404
 
-        # Fetch the transcript from the first available caption track
-        caption_url = captions[0].get("baseUrl")
+        # Debug: Log captions for inspection
+        logging.info(f"Captions found: {json.dumps(captions, indent=2)}")
+
+        # Check for captions
+        if not captions:
+            return {"error": "No captions found (manual or auto-generated)"}, 404
+
+        # Check for auto-generated captions (kind: "asr")
+        auto_generated_captions = [
+            track for track in captions if "kind" in track and track["kind"] == "asr"
+        ]
+
+        # Prefer auto-generated captions if available
+        if auto_generated_captions:
+            logging.info("Using auto-generated captions.")
+            caption_url = auto_generated_captions[0].get("baseUrl")
+        else:
+            logging.info("Using manually provided captions.")
+            caption_url = captions[0].get("baseUrl")
+
+        # Ensure a caption URL exists
         if not caption_url:
             return {"error": "Caption URL not found"}, 404
 
@@ -73,10 +93,6 @@ def extract_youtube_transcript(video_id):
         return {"error": f"Error extracting YouTube transcript: {str(e)}"}, 500
 
 
-import logging
-
-logging.basicConfig(level=logging.INFO)
-
 @app.route('/transcript', methods=['GET'])
 def get_transcript():
     logging.info("Request received at /transcript")
@@ -94,7 +110,6 @@ def get_transcript():
     except Exception as e:
         logging.error(f"Exception occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
-
 
 
 if __name__ == '__main__':
