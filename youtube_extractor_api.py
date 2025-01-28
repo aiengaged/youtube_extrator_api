@@ -90,5 +90,6 @@ def get_transcript():
 
 if __name__ == '__main__':
     # Handle dynamic port assignment for Render
+    import os #Ensure os is imported
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
