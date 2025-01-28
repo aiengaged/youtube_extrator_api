@@ -1,20 +1,24 @@
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+# Use a lightweight Python image
+FROM python:3.9-slim
 
-# Install Python
-RUN apt-get update && apt-get install -y python3 python3-pip
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
-# Copy files
+# Copy the application files into the container
 COPY . /app
 
-# Upgrade pip and install dependencies
+# Upgrade pip and install Python dependencies
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Expose port
+# Expose the port your application runs on
 EXPOSE 5000
 
-# Command to run your API
-CMD ["python3", "youtube_extractor_api.py"]
+# Run the application
+CMD ["python", "youtube_extractor_api.py"]
