@@ -4,20 +4,12 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
+import os  # <-- Import added here
 
 app = Flask(__name__)
 
 # Function to extract YouTube transcript
 def extract_youtube_transcript(video_id):
-    """
-    Extracts the transcript of a YouTube video using its video ID.
-
-    Args:
-        video_id (str): The ID of the YouTube video.
-
-    Returns:
-        list: A list of dictionaries containing the transcript text, start time, and duration.
-    """
     try:
         # Fetch the YouTube video page
         url = f"https://www.youtube.com/watch?v={video_id}"
@@ -83,15 +75,6 @@ def extract_youtube_transcript(video_id):
 
 @app.route('/transcript', methods=['GET'])
 def get_transcript():
-    """
-    Endpoint to fetch YouTube video transcripts.
-
-    Query Parameters:
-        video_id (str): The ID of the YouTube video.
-
-    Returns:
-        JSON response containing the transcript or an error message.
-    """
     video_id = request.args.get('video_id')
     if not video_id:
         return jsonify({"error": "video_id is required"}), 400
